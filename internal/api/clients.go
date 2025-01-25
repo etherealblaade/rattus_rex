@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"time"
 )
@@ -37,7 +39,7 @@ type Choice struct {
 
 func NewClient(baseURL, apiKey string) *Client {
 	return &Client{
-		HTTPClient: &http.Client{Timeout: time.Second * 30},
+		HTTPClient: &http.Client{Timeout: time.Second * 120},
 		BaseURL:    baseURL,
 		APIKey:     apiKey,
 	}
@@ -48,15 +50,19 @@ func (c *Client) CreateCompletion(msg string, model string) (*CompletionResponse
 		Messages: []Message{{Role: "user", Content: msg}},
 	}
 
+	body, _ := json.Marshal(request)
+	log.Printf("Request: %s", string(body))
+
 	resp, err := c.makeRequest(request)
 	if err != nil {
 		return nil, err
 	}
 
+	respBody, _ := io.ReadAll(resp.Body)
+	log.Printf("Response: %s", string(respBody))
+
 	var result CompletionResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, err
-	}
+	json.Unmarshal(respBody, &result)
 	defer resp.Body.Close()
 
 	return &result, nil

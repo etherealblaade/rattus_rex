@@ -93,20 +93,37 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	s := "🐀 Rattus Rex\n\n"
+	var sb strings.Builder
+
+	sb.WriteString("🐀 Rattus Rex\n\n")
 
 	for i := 0; i < len(m.messages); i += 2 {
-		s += fmt.Sprintf("You: %s\n", m.messages[i])
+		sb.WriteString("You: ")
+		sb.WriteString(m.messages[i])
+		sb.WriteString("\n\n")
+
 		if i+1 < len(m.messages) {
-			s += fmt.Sprintf("AI: %s\n", m.messages[i+1])
+			sb.WriteString("AI:\n")
+			lines := strings.Split(m.messages[i+1], "\n")
+			for _, line := range lines {
+				if strings.TrimSpace(line) != "" {
+					sb.WriteString("  ")
+					sb.WriteString(line)
+					sb.WriteString("\n")
+				}
+			}
+			sb.WriteString("\n")
 		}
-		s += "\n"
 	}
 
 	if m.err != nil {
-		s += fmt.Sprintf("\nError: %v\n", m.err)
+		sb.WriteString("\nError: ")
+		sb.WriteString(m.err.Error())
+		sb.WriteString("\n")
 	}
 
-	s += fmt.Sprintf("\n> %s", m.input)
-	return s
+	sb.WriteString("> ")
+	sb.WriteString(m.input)
+
+	return sb.String()
 }
