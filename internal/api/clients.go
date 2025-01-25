@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
 	"time"
 )
@@ -44,25 +42,22 @@ func NewClient(baseURL, apiKey string) *Client {
 		APIKey:     apiKey,
 	}
 }
+
 func (c *Client) CreateCompletion(msg string, model string) (*CompletionResponse, error) {
 	request := CompletionRequest{
 		Model:    model,
 		Messages: []Message{{Role: "user", Content: msg}},
 	}
 
-	body, _ := json.Marshal(request)
-	log.Printf("Request: %s", string(body))
-
 	resp, err := c.makeRequest(request)
 	if err != nil {
 		return nil, err
 	}
 
-	respBody, _ := io.ReadAll(resp.Body)
-	log.Printf("Response: %s", string(respBody))
-
 	var result CompletionResponse
-	json.Unmarshal(respBody, &result)
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
 
 	return &result, nil
