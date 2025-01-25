@@ -1,6 +1,7 @@
 package chain
 
 import (
+	"fmt"
 	"github.com/etherealblaade/rattus_rex/internal/api"
 	"os"
 )
@@ -28,9 +29,24 @@ func NewModelChain() *ModelChain {
 func (mc *ModelChain) Process(input string) (string, error) {
 	reasoning, err := mc.DeepseekClient.CreateCompletion(input, mc.DeepseekModel)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("deepseek error: %w", err)
 	}
 
-	response, err := mc.OpenRouterClient.CreateCompletion(input+"\n"+reasoning.Choices[0].Message.Content, mc.OpenRouterModel)
-	return response.Choices[0].Message.Content, err
+	if len(reasoning.Choices) == 0 {
+		return "", fmt.Errorf("no response from deepseek")
+	}
+
+	response, err := mc.OpenRouterClient.CreateCompletion(
+		input+"\n"+reasoning.Choices[0].Message.Content,
+		mc.OpenRouterModel,
+	)
+	if err != nil {
+		return "", fmt.Errorf("openrouter error: %w", err)
+	}
+
+	if len(response.Choices) == 0 {
+		return "", fmt.Errorf("no response from openrouter")
+	}
+
+	return response.Choices[0].Message.Content, nil
 }
