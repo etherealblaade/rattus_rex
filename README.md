@@ -12,7 +12,7 @@ Modern AI reasoning chain CLI tool written in Go. Combines DeepSeek and OpenRout
 ## Installation
 ```bash
 git clone https://github.com/etherealblaade/rattus_rex
-cd rattus_rex
+cd rattus_rex/cmd
 go build
 ```
 
@@ -28,7 +28,7 @@ Replace your_deepseek_api_key and your_openrouter_api_key with your actual API k
 ## Usage
 Run the application using the following command:
 ```bash
-./rattus_rex
+./cmd
 ```
 
 Commands:
